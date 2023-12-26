@@ -8,8 +8,8 @@ if(NOT DEFINED QT6_DIRECTORY_PREFIX)
     set(QT6_DIRECTORY_PREFIX "Qt6/")
 endif()
 
-if(VCPKG_TARGET_IS_ANDROID AND NOT ANDROID_SDK_ROOT)
-    message(FATAL_ERROR "${PORT} requires ANDROID_SDK_ROOT to be set. Consider adding it to the triplet." )
+if(VCPKG_TARGET_IS_ANDROID AND NOT ANDROID_SDK_ROOT AND NOT DEFINED ENV{ANDROID_SDK_ROOT}) # The scripts/toolchains/android.cmake file handles writing the env var to a cmake var
+    message(FATAL_ERROR "${PORT} requires ANDROID_SDK_ROOT to be set. Set ANDROID_SDK_ROOT as environment variable or in the triplet." )
 endif()
 
 function(qt_download_submodule_impl)
