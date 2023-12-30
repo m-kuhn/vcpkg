@@ -36,6 +36,9 @@ ENV APT_PACKAGES="$APT_PACKAGES libxext-dev libxfixes-dev libxrender-dev \
 ## PowerShell
 ENV APT_PACKAGES="$APT_PACKAGES powershell"
 
+## qtbase for android
+ENV APT_PACKAGES="$APT_PACKAGES default-jre"
+
 RUN <<END_OF_SCRIPT bash
 export DEBIAN_FRONTEND=noninteractive
 
