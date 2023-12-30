@@ -64,6 +64,8 @@ rm -f android-ndk-r25c-linux.zip
 unzip /android-sdk-10406996.zip -d android-sdk
 rm -f android-sdk-10406996.zip
 
+/android-sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-33"
+
 END_OF_SCRIPT
 
 ENV ANDROID_NDK_HOME /android-ndk-r25c
