@@ -69,6 +69,4 @@ END_OF_SCRIPT
 ENV ANDROID_NDK_HOME /android-ndk-r25c
 ENV ANDROID_SDK_ROOT /android-sdk
 
-RUN ls -a
-
 WORKDIR /vcpkg
