@@ -9,11 +9,9 @@ function(z_vcpkg_calculate_corrected_macho_rpath)
     endif()
 
     set(current_prefix "${CURRENT_PACKAGES_DIR}")
-    set(current_installed_prefix "${CURRENT_INSTALLED_DIR}")
     file(RELATIVE_PATH relative_from_packages "${CURRENT_PACKAGES_DIR}" "${arg_MACHO_FILE_DIR}")
     if("${relative_from_packages}/" MATCHES "^debug/" OR "${relative_from_packages}/" MATCHES "^(manual-)?tools/.*/debug/.*")
         set(current_prefix "${CURRENT_PACKAGES_DIR}/debug")
-        set(current_installed_prefix "${CURRENT_INSTALLED_DIR}/debug")
     endif()
 
     # compute path relative to lib
@@ -28,6 +26,41 @@ function(z_vcpkg_calculate_corrected_macho_rpath)
     endif()
 
     set("${arg_OUT_NEW_RPATH_VAR}" "${new_rpath}" PARENT_SCOPE)
+endfunction()
+
+function(z_vcpkg_calculate_corrected_macho_install_name)
+    cmake_parse_arguments(PARSE_ARGV 0 "arg"
+        ""
+        "MACHO_FILE;OUT_NEW_INSTALL_NAME_VAR"
+        "")
+
+    if(DEFINED arg_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION} was passed extra arguments: ${arg_UNPARSED_ARGUMENTS}")
+    endif()
+
+    set(new_rpath "${arg_MACHO_FILE}")
+
+    if("${arg_MACHO_FILE}" MATCHES "^\/.*")
+        file(RELATIVE_PATH relative_from_packages "${CURRENT_PACKAGES_DIR}" "${arg_MACHO_FILE}")
+        file(RELATIVE_PATH relative_from_install "${CURRENT_INSTALLED_DIR}" "${arg_MACHO_FILE}")
+
+        set(new_rpath "${arg_MACHO_FILE}")
+        if (relative_from_packages MATCHES "^lib/.*")
+            string(REPLACE "lib/" "" stripped_relative_from_packages "${relative_from_packages}")
+            set(new_rpath "@rpath/${stripped_relative_from_packages}")
+        elseif (relative_from_packages MATCHES "^debug/lib/.*")
+            string(REPLACE "debug/lib/" "" stripped_relative_from_packages "${relative_from_packages}")
+            set(new_rpath "@rpath/${stripped_relative_from_packages}")
+        elseif (relative_from_install MATCHES "^lib/.*")
+            string(REPLACE "lib/" "" stripped_relative_from_install "${relative_from_install}")
+            set(new_rpath "@rpath/${stripped_relative_from_install}")
+        elseif (relative_from_install MATCHES "^debug/lib/.*")
+            string(REPLACE "debug/lib/" "" stripped_relative_from_install "${relative_from_install}")
+            set(new_rpath "@rpath/${stripped_relative_from_install}")
+        endif()
+    endif()
+
+    set(${arg_OUT_NEW_INSTALL_NAME_VAR} "${new_rpath}" PARENT_SCOPE)
 endfunction()
 
 function(z_vcpkg_fixup_macho_rpath_in_dir)
@@ -91,8 +124,42 @@ function(z_vcpkg_fixup_macho_rpath_in_dir)
             elseif(file_output MATCHES ".*Mach-O.*executable.*")
                 set(file_type "executable")
             else()
-                debug_message("File `${macho_file}` reported as `${file_output}` is not a Mach-O file")
+                # debug_message("File `${macho_file}` reported as `${file_output}` is not a Mach-O file")
                 continue()
+            endif()
+
+            # Replace absolute paths to dependencies with paths relative to rpath
+            execute_process(
+                COMMAND "${otool_cmd}" -L "${macho_file}"
+                OUTPUT_VARIABLE get_dep_install_names_output
+                RESULT_VARIABLE get_dep_install_names_rv
+            )
+
+            if(get_dep_install_names_rv EQUAL 0)
+                # Strip the first line
+                string(REGEX REPLACE "^.*:\n" "" get_dep_install_names_output "${get_dep_install_names_output}")
+
+                # Extract the install names of the dependencies
+                string(REGEX MATCHALL "[^\n\t]+(.dylib|.so)" dependencies "${get_dep_install_names_output}")
+
+                foreach(dependency IN LISTS dependencies)
+                    z_vcpkg_calculate_corrected_macho_install_name(MACHO_FILE ${dependency} OUT_NEW_INSTALL_NAME_VAR new_install_name)
+                    if(NOT "${dependency}" STREQUAL "${new_install_name}")
+                        message(STATUS "Changing install name for '${dependency}' to '${new_install_name}' in ${macho_file}")
+
+                        execute_process(
+                            COMMAND "${install_name_tool_cmd}" -change "${dependency}" "${new_install_name}" "${macho_file}"
+                            ERROR_VARIABLE change_install_name_output
+                            RESULT_VARIABLE change_install_name_rv
+                        )
+
+                        if(NOT change_install_name_rv EQUAL 0)
+                            message(FATAL_ERROR "Could not execute \n    ${install_name_tool_cmd} -change ${dependency} ${new_install_name} ${macho_file}\n\n${change_install_name_output}")
+                        endif()
+                    endif()
+                endforeach()
+            else()
+                message(FATAL_ERROR "otool -L ${macho_file}, failed: \n${get_dep_install_names_output}")
             endif()
 
             get_filename_component(macho_file_dir "${macho_file}" DIRECTORY)

@@ -63,3 +63,138 @@ if(NOT "x${new_rpath}x" STREQUAL "x${expected}x")
 else()
   message(STATUS "--- Calculated rpath matches expected rpath: '${new_rpath}' ")
 endif()
+
+# dependency in packages/lib
+set(dependency "${CURRENT_PACKAGES_DIR}/lib/libdep.so")
+set(expected "@rpath/libdep.so")
+
+z_vcpkg_calculate_corrected_macho_install_name(
+  MACHO_FILE "${dependency}"
+  OUT_NEW_INSTALL_NAME_VAR new_rpath
+)
+
+if(NOT "x${new_rpath}x" STREQUAL "x${expected}x")
+  message(FATAL_ERROR "--- Calculated rpath does not match expected rpath: '${new_rpath}' != '${expected}' ")
+else()
+  message(STATUS "--- Calculated rpath matches expected rpath: '${new_rpath}' ")
+endif()
+
+# dependency in packages/lib/subdir
+set(dependency "${CURRENT_PACKAGES_DIR}/lib/plugins/libdep.dylib")
+set(expected "@rpath/plugins/libdep.dylib")
+
+z_vcpkg_calculate_corrected_macho_install_name(
+  MACHO_FILE "${dependency}"
+  OUT_NEW_INSTALL_NAME_VAR new_rpath
+)
+
+if(NOT "x${new_rpath}x" STREQUAL "x${expected}x")
+  message(FATAL_ERROR "--- Calculated rpath does not match expected rpath: '${new_rpath}' != '${expected}' ")
+else()
+  message(STATUS "--- Calculated rpath matches expected rpath: '${new_rpath}' ")
+endif()
+
+# dependency in packages/debug/lib/subdir
+set(dependency "${CURRENT_PACKAGES_DIR}/debug/lib/libdep.so")
+set(expected "@rpath/libdep.so")
+
+z_vcpkg_calculate_corrected_macho_install_name(
+  MACHO_FILE "${dependency}"
+  OUT_NEW_INSTALL_NAME_VAR new_rpath
+)
+
+if(NOT "x${new_rpath}x" STREQUAL "x${expected}x")
+  message(FATAL_ERROR "--- Calculated rpath does not match expected rpath: '${new_rpath}' != '${expected}' ")
+else()
+  message(STATUS "--- Calculated rpath matches expected rpath: '${new_rpath}' ")
+endif()
+
+# dependency in packages/debug/lib/subdir
+set(dependency "${CURRENT_PACKAGES_DIR}/debug/lib/plugins/libdep.so")
+set(expected "@rpath/plugins/libdep.so")
+
+z_vcpkg_calculate_corrected_macho_install_name(
+  MACHO_FILE "${dependency}"
+  OUT_NEW_INSTALL_NAME_VAR new_rpath
+)
+
+if(NOT "x${new_rpath}x" STREQUAL "x${expected}x")
+  message(FATAL_ERROR "--- Calculated rpath does not match expected rpath: '${new_rpath}' != '${expected}' ")
+else()
+  message(STATUS "--- Calculated rpath matches expected rpath: '${new_rpath}' ")
+endif()
+
+# dependency in installed/lib
+set(dependency "${CURRENT_INSTALLED_DIR}/lib/libdep.so")
+set(expected "@rpath/libdep.so")
+
+z_vcpkg_calculate_corrected_macho_install_name(
+  MACHO_FILE "${dependency}"
+  OUT_NEW_INSTALL_NAME_VAR new_rpath
+)
+
+if(NOT "x${new_rpath}x" STREQUAL "x${expected}x")
+  message(FATAL_ERROR "--- Calculated rpath does not match expected rpath: '${new_rpath}' != '${expected}' ")
+else()
+  message(STATUS "--- Calculated rpath matches expected rpath: '${new_rpath}' ")
+endif()
+
+# dependency in packages/lib/subdir
+set(dependency "${CURRENT_INSTALLED_DIR}/lib/plugins/libdep.so")
+set(expected "@rpath/plugins/libdep.so")
+
+z_vcpkg_calculate_corrected_macho_install_name(
+  MACHO_FILE "${dependency}"
+  OUT_NEW_INSTALL_NAME_VAR new_rpath
+)
+
+if(NOT "x${new_rpath}x" STREQUAL "x${expected}x")
+  message(FATAL_ERROR "--- Calculated rpath does not match expected rpath: '${new_rpath}' != '${expected}' ")
+else()
+  message(STATUS "--- Calculated rpath matches expected rpath: '${new_rpath}' ")
+endif()
+
+# dependency in packages/debug/lib/subdir
+set(dependency "${CURRENT_INSTALLED_DIR}/debug/lib/libdep.so")
+set(expected "@rpath/libdep.so")
+
+z_vcpkg_calculate_corrected_macho_install_name(
+  MACHO_FILE "${dependency}"
+  OUT_NEW_INSTALL_NAME_VAR new_rpath
+)
+
+if(NOT "x${new_rpath}x" STREQUAL "x${expected}x")
+  message(FATAL_ERROR "--- Calculated rpath does not match expected rpath: '${new_rpath}' != '${expected}' ")
+else()
+  message(STATUS "--- Calculated rpath matches expected rpath: '${new_rpath}' ")
+endif()
+
+# dependency in packages/debug/lib/subdir
+set(dependency "${CURRENT_INSTALLED_DIR}/debug/lib/plugins/libdep.so")
+set(expected "@rpath/plugins/libdep.so")
+
+z_vcpkg_calculate_corrected_macho_install_name(
+  MACHO_FILE "${dependency}"
+  OUT_NEW_INSTALL_NAME_VAR new_rpath
+)
+
+if(NOT "x${new_rpath}x" STREQUAL "x${expected}x")
+  message(FATAL_ERROR "--- Calculated rpath does not match expected rpath: '${new_rpath}' != '${expected}' ")
+else()
+  message(STATUS "--- Calculated rpath matches expected rpath: '${new_rpath}' ")
+endif()
+
+# dependency in system
+set(dependency "/usr/lib/libc++.1.dylib")
+set(expected "/usr/lib/libc++.1.dylib")
+
+z_vcpkg_calculate_corrected_macho_install_name(
+  MACHO_FILE "${dependency}"
+  OUT_NEW_INSTALL_NAME_VAR new_rpath
+)
+
+if(NOT "x${new_rpath}x" STREQUAL "x${expected}x")
+  message(FATAL_ERROR "--- Calculated rpath does not match expected rpath: '${new_rpath}' != '${expected}' ")
+else()
+  message(STATUS "--- Calculated rpath matches expected rpath: '${new_rpath}' ")
+endif()
