@@ -132,33 +132,35 @@ function(z_vcpkg_fixup_macho_rpath_in_dir)
             string(REGEX MATCHALL "rpath [^\n]+" get_rpath_ov "${get_rpath_ov}")
             string(REGEX REPLACE "rpath " "" rpath_list "${get_rpath_ov}")
 
-            list(FIND rpath_list "${new_rpath}" has_new_rpath)
-            if(NOT has_new_rpath EQUAL -1)
-                list(REMOVE_AT rpath_list ${has_new_rpath})
-                set(rpath_args)
-            else()
-                set(rpath_args -add_rpath "${new_rpath}")
-            endif()
+            set(rpath_args "")
+            set(found_new_rpath FALSE)
+
             foreach(rpath IN LISTS rpath_list)
-                list(APPEND rpath_args "-delete_rpath" "${rpath}")
+                if(rpath STREQUAL new_rpath)
+                    set(found_new_rpath TRUE)
+                else()
+                    list(APPEND rpath_args "-delete_rpath" "${rpath}")
+                endif()
             endforeach()
-            if(rpath_args STREQUAL "")
-                continue()
+
+            if(NOT found_new_rpath)
+                list(APPEND rpath_args "-add_rpath" "${new_rpath}")
             endif()
 
-            # Set the new rpath
-            execute_process(
-                COMMAND "${install_name_tool_cmd}" ${rpath_args} "${macho_file}"
-                OUTPUT_QUIET
-                ERROR_VARIABLE set_rpath_error
-            )
+            if(NOT "${rpath_args}" STREQUAL "")
+                execute_process(
+                    COMMAND "${install_name_tool_cmd}" ${rpath_args} "${macho_file}"
+                    OUTPUT_QUIET
+                    ERROR_VARIABLE set_rpath_error
+                )
 
-            if(NOT "${set_rpath_error}" STREQUAL "")
-                message(WARNING "Couldn't adjust RPATH of '${macho_file}': ${set_rpath_error}")
-                continue()
+                if(NOT "${set_rpath_error}" STREQUAL "")
+                    message(WARNING "Couldn't adjust RPATH of '${macho_file}': ${set_rpath_error}")
+                    continue()
+                endif()
+
+                message(STATUS "Adjusted RPATH of '${macho_file}' to '${new_rpath}'")
             endif()
-
-            message(STATUS "Adjusted RPATH of '${macho_file}' to '${new_rpath}'")
         endforeach()
     endforeach()
 endfunction()
