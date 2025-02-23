@@ -7,7 +7,9 @@ vcpkg_from_github(
     PATCHES
         fix_static_build.patch
 	fix_windows_build.patch
+        unvendor.patch
 )
+file(REMOVE_RECURSE "${SOURCE_PATH}/c/vendor")
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
